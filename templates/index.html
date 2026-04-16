@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crop Disease Detection</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #2c7a4b;
+        }
+
+        input {
+            margin: 20px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #43cea2;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2fbf91;
+        }
+
+        img {
+            margin-top: 15px;
+            width: 100%;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .spinner {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f1f1f1;
+            display: none;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>🌿 Crop Doctor</h1>
+    <p>Upload a leaf image</p>
+
+    <form id="upload-form">
+        <input type="file" id="fileInput" required>
+        <button type="submit">Predict Disease</button>
+    </form>
+
+    <img id="preview">
+
+    <div class="spinner" id="spinner">⏳ Predicting...</div>
+
+    <div class="result-box" id="resultBox">
+        <h3 id="disease"></h3>
+        <p id="confidence"></p>
+    </div>
+
+    <div class="error" id="error"></div>
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const preview = document.getElementById("preview");
+const form = document.getElementById("upload-form");
+
+const spinner = document.getElementById("spinner");
+const resultBox = document.getElementById("resultBox");
+const errorBox = document.getElementById("error");
+
+// Image preview
+fileInput.addEventListener("change", function() {
+    const file = fileInput.files[0];
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+});
+
+// Submit
+form.addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const file = fileInput.files[0];
+
+    if (!file) {
+        errorBox.innerText = "Please upload an image!";
+        return;
+    }
+
+    errorBox.innerText = "";
+    spinner.style.display = "block";
+    resultBox.style.display = "none";
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("/predict", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        spinner.style.display = "none";
+        resultBox.style.display = "block";
+
+        document.getElementById("disease").innerText = "🌱 " + data.disease;
+        document.getElementById("confidence").innerText =
+            "Confidence: " + (data.confidence * 100).toFixed(2) + "%";
+
+    } catch (err) {
+        spinner.style.display = "none";
+        errorBox.innerText = "Server error. Try again!";
+    }
+});
+</script>
+
+</body>
+</html>
