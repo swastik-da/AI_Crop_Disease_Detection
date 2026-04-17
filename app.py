@@ -1,19 +1,15 @@
 from flask import Flask, request, jsonify, render_template
 import numpy as np
-import tensorflow as tf
 from PIL import Image
 import os
 
 # Initialize app
 app = Flask(__name__)
 
-# Load model safely (important for deployment)
-try:
-    model = tf.keras.models.load_model("model/mobilenet_model.keras")
-except:
-    model = None
+# ❌ Disable model for deployment
+model = None
 
-# Class labels (must match training order)
+# Class labels (kept for future use)
 class_names = [
     "Pepper__bell___Bacterial_spot",
     "Pepper__bell___healthy",
@@ -37,7 +33,7 @@ class_names = [
 def home():
     return render_template("index.html")
 
-# Image preprocessing
+# Image preprocessing (still kept)
 def preprocess_image(image):
     image = image.resize((224, 224))
     image = np.array(image) / 255.0
@@ -47,8 +43,12 @@ def preprocess_image(image):
 # Prediction route
 @app.route("/predict", methods=["POST"])
 def predict():
+    # 🔥 Handle deployment case
     if model is None:
-        return jsonify({"error": "Model not loaded"})
+        return jsonify({
+            "disease": "Model not deployed",
+            "confidence": 0.0
+        })
 
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"})
@@ -67,6 +67,6 @@ def predict():
         "confidence": confidence
     })
 
-# Run app (Render compatible)
+# Run app
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
