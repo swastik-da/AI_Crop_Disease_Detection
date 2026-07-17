@@ -2,7 +2,7 @@
 AI-based web app to detect crop diseases using deep learning.
 
 # Live Demo
-Live App: https://your-render-url.onrender.com
+Live App: https://ai-crop-disease-detection-eohw.onrender.com
 
 # Deployment Note
 Due to platform limitations, the TensorFlow model is not deployed online.
